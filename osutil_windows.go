@@ -13,9 +13,9 @@ import (
 
 var (
 	shell32        = windows.NewLazyDLL("shell32.dll")
-	shellexecute   = shell32.NewProc("ShellExecute")
+	shellExecute   = shell32.NewProc("ShellExecuteW")
 	kernel32       = syscall.MustLoadDLL("kernel32.dll")
-	QueryDosDevice = kernel32.MustFindProc("QueryDosDeviceA")
+	queryDosDevice = kernel32.MustFindProc("QueryDosDeviceA")
 )
 
 func logdir(appname string) string {
@@ -41,7 +41,7 @@ func open(object string) error {
 		return err
 	}
 
-	_, _, err = shellexecute.Call(
+	_, _, err = shellExecute.Call(
 		0,
 		uintptr(unsafe.Pointer(lpOperation)),
 		uintptr(unsafe.Pointer(lpFile)),
@@ -60,7 +60,7 @@ func getSerialPorts() ([]string, error) {
 	)
 
 	for {
-		ret, _, err := QueryDosDevice.Call(0, uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf)))
+		ret, _, err := queryDosDevice.Call(0, uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf)))
 		if ret == 0 {
 			errno := err.(syscall.Errno)
 			if errno == windows.ERROR_INSUFFICIENT_BUFFER {
